@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="fungraphics-1.5.12" level="project" />
     <orderEntry type="library" name="FunGraphics-1.5.11" level="project" />
   </component>
 </module>
