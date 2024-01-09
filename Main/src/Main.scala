@@ -23,24 +23,23 @@ class Board(x : Int, y : Int) {
   }
 
   def createApple(spawnApple : Boolean, board : Array[Array[Int]]) : Array[Array[Int]] = {
-    if (!spawnApple) {
+    if (spawnApple) {
       var position : Array[Array[Int]] = board
       var spawn : Random = new Random()
-      var X : Int = spawn.between(1, x - 1)
-      var Y : Int = spawn.between(1, y - 1)
-      while (position(X)(Y) != 0) {
-        X = spawn.between(1, x - 1)
-        Y = spawn.between(1, y - 1)
+      var randomX : Int = spawn.between(1, x - 1)
+      var randomY : Int = spawn.between(1, y - 1)
+      while (position(randomX)(randomY) != 0) {
+        randomX = spawn.between(1, x - 1)
+        randomY = spawn.between(1, y - 1)
       }
-      position(X)(Y) = -1
-      println(position(X)(Y))
+      position(randomX)(randomY) = -1
       position
     } else board
   }
 }
 
 object SnakeGame extends App {
-  var createApple : Boolean = true
+  var spawnApple : Boolean = true
   println("Please, enter the value for board's width and height: (the value have to be between 4 and 12)")
   var sizeOfBoard : Int = Input.readInt()
   val game : Board = new Board(sizeOfBoard, sizeOfBoard)
@@ -49,7 +48,7 @@ object SnakeGame extends App {
   println("Please, enter a valid value")
   sizeOfBoard = Input.readInt()
   }
-  var updatedBoard : Array[Array[Int]] = game.createApple(createApple, board)
+  var updatedBoard : Array[Array[Int]] = game.createApple(spawnApple, board)
 
   for(i <- 0 until updatedBoard.length){
     for(j <-0 until updatedBoard(0).length){
