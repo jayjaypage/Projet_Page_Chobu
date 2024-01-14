@@ -5,20 +5,30 @@ import scala.collection.mutable.ArrayBuffer
 import java.io.{BufferedReader, InputStreamReader}
 
 class MyTuple() {
-  var x: Int = 0
+  var x: Int = 5
   var y: Int = 0
 }
 
 class Snake() {
-  var position: Array[MyTuple] = Array.ofDim[MyTuple](4)
+
+  private var snakeLength : Int = 3
+  var position: Array[MyTuple] = Array.ofDim[MyTuple](snakeLength + 1)
   position(0) = new MyTuple()
-  position(0).y = 0
+  position(0).y = 5
   position(1) = new MyTuple()
-  position(1).y = 1
+  position(1).y = 6
   position(2) = new MyTuple()
-  position(2).y = 2
+  position(2).y = 7
   position(3) = new MyTuple()
-  position(3).y = 3
+  position(3).y = 8
+
+  def makeSnakeLonger(in : Boolean): Unit = {
+    if (in) {
+      snakeLength += 1
+      position(snakeLength) = new MyTuple()
+      position(snakeLength).y = snakeLength
+    }
+  }
 
   def readChar(): Char = {
     System.out.println("Press 'a' to turn left, 'w' to turn up, 's' to turn down and 'd' to turn right : ")
@@ -31,8 +41,8 @@ class Snake() {
   }
 
   def changeState(arrow: Char): Unit = {
-    // ASCII : up = w; down: y; right: s; left: a
-    var newPosition: Array[MyTuple] = Array.ofDim[MyTuple](4)
+    // ASCII : up = w; down: s; right: d; left: a
+    var newPosition: Array[MyTuple] = Array.ofDim[MyTuple](snakeLength + 1)
     for (i <- newPosition.indices) {
       newPosition(i) = new MyTuple()
       newPosition(i).x = position(i).x
@@ -75,7 +85,26 @@ class Snake() {
 //}
 
 class Board(x : Int, y : Int) {
-  var snake: Snake = new Snake()
+  private var snake: Snake = new Snake()
+
+    private var gameOver : Boolean = false
+    private var spawnApple : Boolean = true
+    def startGame() : Unit = {
+
+      val game: Board = new Board(x, y)
+      val board: Array[Array[Char]] = game.defineBoard()
+
+
+      var updatedBoard: Array[Array[Char]] = board
+      var c: Char = 's'
+      while ((c == 'w' || c == 'd' || c == 'a' || c == 's') && !gameOver) {
+        c = snake.readChar()
+        snake.changeState(c)
+        gameOver = game.moveSnake(snake, gameOver, spawnApple, updatedBoard)
+      }
+
+    }
+
   def defineBoard() : Array[Array[Char]] = {
     var board : Array[Array[Char]] = Array.ofDim[Char](x + 2, y + 2)  // creates board according to the values of 'x' and 'y' and adds space for bounds
     var w = board.length
@@ -86,7 +115,7 @@ class Board(x : Int, y : Int) {
           board(a)(b) = '*'
           print(board(a)(b))
         } else {
-          board(a)(b) = 0
+          board(a)(b) = '#'
           print(board(a)(b))
         }
       }
@@ -95,54 +124,41 @@ class Board(x : Int, y : Int) {
     board
   }
 
- def moveSnake() : Unit = {
-    var c: Char = 's'
-    while (c == 'w' | c == 'd' | c == 'a' | c == 's') {
-      c = snake.readChar()
-      snake.changeState(c)
-      print(s"New snake position:")
-      for (i <- snake.position.indices) {
-        print(s"(${snake.position(i).x};${snake.position(i).y}); ")
-      }
-      println("")
-    }
-  }
+  def moveSnake(snake : Snake, in : Boolean, apple : Boolean, board : Array[Array[Char]]): Boolean = {
+      var gameOver : Boolean = in
+      var spawnApple : Boolean = apple
 
-
-  def createApple(spawnApple : Boolean, board : Array[Array[Char]]) : Array[Array[Char]] = {
-    if (spawnApple) {
-      var position : Array[Array[Char]] = board
-      var spawn : Random = new Random()
-      var randomX : Int = spawn.between(1, x - 1)
-      var randomY : Int = spawn.between(1, y - 1)
-      while (position(randomX)(randomY) != 0) {
-        randomX = spawn.between(1, x - 1)
-        randomY = spawn.between(1, y - 1)
+        print(s"New snake position:")
+        for (i <- snake.position.indices) {
+          print(s"(${snake.position(i).x};${snake.position(i).y}); ")
+        }
+        if (board(snake.position(0).x)(snake.position(0).y) == '*') {
+          gameOver = true
+          println("Game over!")
+        }
+        if (spawnApple) { // when 'true' creates a new apple
+          var position : Array[Array[Char]] = board
+          var spawn : Random = new Random()
+          var randomX : Int = spawn.between(1, x - 1)
+          var randomY : Int = spawn.between(1, y - 1)
+          while (position(randomX)(randomY) != '#') {
+            randomX = spawn.between(1, x - 1)
+            randomY = spawn.between(1, y - 1)
+          }
+          position(randomX)(randomY) = '0'
+          spawnApple = false
+        }
+      gameOver
       }
-      position(randomX)(randomY) = '#'
-      position
-    } else board
-  }
 }
 
-object SnakeGame extends App {
-  var spawnApple : Boolean = true
+object SnakeGame extends App { // I have found an issue when click on Enter multiply times without entering Char => snake collides into itself
   println("Please, enter the value for board's width and height: (the value have to be between 4 and 12)")
-  var sizeOfBoard : Int = Input.readInt()
-  val game : Board = new Board(sizeOfBoard, sizeOfBoard)
-  val board : Array[Array[Char]] = game.defineBoard()
-  while(sizeOfBoard < 4 || sizeOfBoard > 12) {
-  println("Please, enter a valid value")
-  sizeOfBoard = Input.readInt()
+  var sizeOfBoard: Int = Input.readInt()
+  while (sizeOfBoard < 4 || sizeOfBoard > 12) {
+    println("Please, enter a valid value")
+    sizeOfBoard = Input.readInt()
   }
-  game.moveSnake()
-
-  var updatedBoard : Array[Array[Char]] = game.createApple(spawnApple, board)
-
-  for(i <- updatedBoard.indices){
-    for(j <- updatedBoard(0).indices){
-      print(updatedBoard(i)(j))
-    }
-    println()
-  }
+  var newGame: Board = new Board(sizeOfBoard, sizeOfBoard)
+  newGame.startGame()
 }
