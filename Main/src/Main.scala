@@ -94,7 +94,6 @@ class Board(x : Int, y : Int) {
       val game: Board = new Board(x, y)
       val board: Array[Array[Char]] = game.defineBoard()
 
-
       var updatedBoard: Array[Array[Char]] = board
       var c: Char = 's'
       while ((c == 'w' || c == 'd' || c == 'a' || c == 's') && !gameOver) {
@@ -148,8 +147,15 @@ class Board(x : Int, y : Int) {
           position(randomX)(randomY) = '0'
           spawnApple = false
         }
-      gameOver
+    for(x <- board.indices) {
+      for(y <- board(0).indices) {
+        print(board(x)(y))
       }
+      println()
+    }
+    gameOver
+
+  }
 }
 
 object SnakeGame extends App { // I have found an issue when click on Enter multiply times without entering Char => snake collides into itself
