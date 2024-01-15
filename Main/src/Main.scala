@@ -10,7 +10,7 @@ class MyTuple() {
 }
 
 class Snake() {
-
+  //var boardSize : Board = new Board(_, _)
   private var snakeLength : Int = 3
   var position: Array[MyTuple] = Array.ofDim[MyTuple](snakeLength + 1)
   position(0) = new MyTuple()
@@ -22,12 +22,10 @@ class Snake() {
   position(3) = new MyTuple()
   position(3).y = 8
 
-  def makeSnakeLonger(in : Boolean): Unit = {
-    if (in) {
+  def makeSnakeLonger(): Unit = {
       snakeLength += 1
       position(snakeLength) = new MyTuple()
       position(snakeLength).y = snakeLength
-    }
   }
 
   def readChar(): Char = {
@@ -87,6 +85,12 @@ class Snake() {
 class Board(x : Int, y : Int) {
   private var snake: Snake = new Snake()
 
+    var borderSymbol : Char = '*'
+    var appleSymbol : Char = 'O'
+    var boardSymbol : Char = '#'
+    var headSymbol : Char = 'h'
+    var bodySymbol : Char = 'b'
+
     private var gameOver : Boolean = false
     private var spawnApple : Boolean = true
     def startGame() : Unit = {
@@ -99,7 +103,7 @@ class Board(x : Int, y : Int) {
       while ((c == 'w' || c == 'd' || c == 'a' || c == 's') && !gameOver) {
         c = snake.readChar()
         snake.changeState(c)
-        gameOver = game.moveSnake(snake, gameOver, spawnApple, updatedBoard)
+        gameOver = game.moveSnake(snake, gameOver, updatedBoard)
       }
 
     }
@@ -111,10 +115,10 @@ class Board(x : Int, y : Int) {
     for (a <- 0 until w) {
       for (b <- 0 until h) {
         if ((a == 0) || (b == 0) || (a == w - 1) || (b == h - 1)) { // creates dead zones for snake
-          board(a)(b) = '*'
+          board(a)(b) = borderSymbol
           print(board(a)(b))
         } else {
-          board(a)(b) = '#'
+          board(a)(b) = boardSymbol
           print(board(a)(b))
         }
       }
@@ -123,30 +127,46 @@ class Board(x : Int, y : Int) {
     board
   }
 
-  def moveSnake(snake : Snake, in : Boolean, apple : Boolean, board : Array[Array[Char]]): Boolean = {
+  def moveSnake(snake : Snake, in : Boolean, board : Array[Array[Char]]): Boolean = {
       var gameOver : Boolean = in
-      var spawnApple : Boolean = apple
+
+    for (x <- board.indices) {
+      for (y <- board(0).indices) {
+        if (board(x)(y) == borderSymbol) {
+          board(x)(y) = borderSymbol
+        } else if (board(x)(y) == appleSymbol) {
+          board(x)(y) = appleSymbol
+        } else board(x)(y) = boardSymbol
+      }
+      }
 
         print(s"New snake position:")
         for (i <- snake.position.indices) {
+          if (i == 0) {
+            board(snake.position(i).x)(snake.position(i).y) = headSymbol
+          } else board(snake.position(i).x)(snake.position(i).y) = bodySymbol
           print(s"(${snake.position(i).x};${snake.position(i).y}); ")
-        }
-        if (board(snake.position(0).x)(snake.position(0).y) == '*') {
-          gameOver = true
-          println("Game over!")
         }
         if (spawnApple) { // when 'true' creates a new apple
           var position : Array[Array[Char]] = board
           var spawn : Random = new Random()
           var randomX : Int = spawn.between(1, x - 1)
           var randomY : Int = spawn.between(1, y - 1)
-          while (position(randomX)(randomY) != '#') {
+          while (position(randomX)(randomY) != boardSymbol) {
             randomX = spawn.between(1, x - 1)
             randomY = spawn.between(1, y - 1)
           }
-          position(randomX)(randomY) = '0'
+          position(randomX)(randomY) = appleSymbol
           spawnApple = false
         }
+    if (board(snake.position(0).x)(snake.position(0).y) == borderSymbol) {
+      gameOver = true
+      println()
+      println("Game over!")
+    } else if (board(snake.position(0).x)(snake.position(0).y) == appleSymbol) {
+      snake.makeSnakeLonger()
+      spawnApple = true
+    }
     for(x <- board.indices) {
       for(y <- board(0).indices) {
         print(board(x)(y))
@@ -154,7 +174,6 @@ class Board(x : Int, y : Int) {
       println()
     }
     gameOver
-
   }
 }
 
